@@ -286,3 +286,15 @@ task createPackage {
     dependsOn createNpmPackage
     println "Creating NativeScript Android Package"
 }
+
+
+task runTests (type: Exec) {
+    doFirst {
+        workingDir "$TEST_APP_PATH"
+        if (isWinOs) {
+            commandLine "cmd", "/c", "gradlew", "-b", "runtests.gradle", "runtests"
+        } else {
+            commandLine "./gradlew", "-b", "runtests.gradle", "runtests"
+        }
+    }
+}
