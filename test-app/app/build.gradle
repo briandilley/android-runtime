@@ -138,7 +138,7 @@ repositories {
 }
 
 dependencies {
-    def supportVer = "25.3.1"
+    def supportVer = "26.0.1"
     if (project.hasProperty("supportVersion")) {
         supportVer = supportVersion
     }
