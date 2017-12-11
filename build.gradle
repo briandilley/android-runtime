@@ -89,6 +89,17 @@ task getCommitVersion {
     }
 }
 
+task generateDtsgJar(type: Exec) {
+    doFirst {
+        workingDir "$rootDir/test-app"
+        if (isWinOs) {
+            commandLine "cmd", "/c", "gradlew", ":dts-generator:jar"
+        } else {
+            commandLine "./gradlew", ":dts-generator:jar"
+        }
+    }
+}
+
 task generateSbgJar(type: Exec) {
     doFirst {
         workingDir "$rootDir/test-app"
@@ -132,7 +143,7 @@ task generateOptimizedRuntimeAar (type: Exec) {
     }
 }
 
-task generateRuntimeAar(type: Exec) {
+task generateRuntimeAar (type: Exec) {
     doFirst {
         workingDir "$rootDir/test-app"
         if (isWinOs) {
@@ -166,6 +177,10 @@ task copyFilesToProjectTemeplate {
         }
         copy {
             from "$rootDir/test-app/build-tools/static-binding-generator.jar"
+            into "$rootDir/dist/framework/build-tools"
+        }
+        copy {
+            from "$rootDir/test-app/build-tools/dts-generator.jar"
             into "$rootDir/dist/framework/build-tools"
         }
         copy {
@@ -250,7 +265,8 @@ task createNpmPackage(type: Exec) {
 createDistDir.dependsOn(cleanDistDir)
 getPackageVersion.dependsOn(createDistDir)
 getCommitVersion.dependsOn(getPackageVersion)
-generateSbgJar.dependsOn(getCommitVersion)
+generateDtsgJar.dependsOn(getCommitVersion)
+generateSbgJar.dependsOn(generateDtsgJar)
 generateMdgJar.dependsOn(generateSbgJar)
 generateRuntime.dependsOn(generateMdgJar)
 generateOptimizedRuntimeAar.dependsOn(generateRuntime)
