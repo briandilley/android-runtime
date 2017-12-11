@@ -121,15 +121,15 @@ task generateRuntime {
     }
 }
 
-task generateOptimizedRuntimeAar { //(type: Exec) {
-    // doFirst {
-    //     workingDir "$rootDir/test-app"
-    //     if (isWinOs) {
-    //         commandLine "cmd", "/c", "gradlew", ":runtime:assembleRelease", "-PpackageVersion=${pVersion}", "-PgitCommitVersion=${arVersion}", "-Poptimized"
-    //     } else {
-    //         commandLine "./gradlew", ":runtime:assembleRelease", "-PpackageVersion=${pVersion}", "-PgitCommitVersion=${arVersion}", "-Poptimized"
-    //     }
-    // }
+task generateOptimizedRuntimeAar (type: Exec) {
+    doFirst {
+        workingDir "$rootDir/test-app"
+        if (isWinOs) {
+            commandLine "cmd", "/c", "gradlew", ":runtime:assembleRelease", "-PpackageVersion=${pVersion}", "-PgitCommitVersion=${arVersion}", "-Poptimized"
+        } else {
+            commandLine "./gradlew", ":runtime:assembleRelease", "-PpackageVersion=${pVersion}", "-PgitCommitVersion=${arVersion}", "-Poptimized"
+        }
+    }
 }
 
 task generateRuntimeAar(type: Exec) {
