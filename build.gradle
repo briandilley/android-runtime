@@ -14,11 +14,14 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
 
 def isWinOs = System.properties['os.name'].toLowerCase().contains('windows')
-def localMetadataGen = "../android-metadata-generator/dist/tns-android-metadata-generator-0.0.1.tgz"
-def distDir = "$projectDir/dist"
 def pVersion = "no package version was provided by build.gradle build"
 def arVersion = "no commit sha was provided by build.gradle build"
 def generateRegularRuntimePackage = !project.hasProperty("skipUnoptimized");
+
+def DIST_PATH = "$rootDir/dist"
+def TEST_APP_PATH = "$rootDir/test-app"
+def BUILD_TOOLS_PATH = "$TEST_APP_PATH/build-tools"
+def DIST_FRAMEWORK_PATH = "$DIST_PATH/framework"
 
 task checkEnvironmentVariables {
     if ("$System.env.JAVA_HOME" == "" || "$System.env.JAVA_HOME" == "null") {
@@ -39,12 +42,12 @@ task checkEnvironmentVariables {
 }
 
 task cleanDistDir(type: Delete) {
-    delete distDir
+    delete DIST_PATH
 }
 
 task createDistDir {
     doLast {
-        def distF = new File(distDir)
+        def distF = new File(DIST_PATH)
         distF.mkdirs()
     }
 }
@@ -91,7 +94,7 @@ task getCommitVersion {
 
 task generateDtsgJar(type: Exec) {
     doFirst {
-        workingDir "$rootDir/test-app"
+        workingDir "$TEST_APP_PATH"
         if (isWinOs) {
             commandLine "cmd", "/c", "gradlew", ":dts-generator:jar"
         } else {
@@ -102,7 +105,7 @@ task generateDtsgJar(type: Exec) {
 
 task generateSbgJar(type: Exec) {
     doFirst {
-        workingDir "$rootDir/test-app"
+        workingDir "$TEST_APP_PATH"
         if (isWinOs) {
             commandLine "cmd", "/c", "gradlew", ":static-binding-generator:jar"
         } else {
@@ -113,7 +116,7 @@ task generateSbgJar(type: Exec) {
 
 task generateMdgJar(type: Exec) {
     doFirst {
-        workingDir "$rootDir/test-app"
+        workingDir "$TEST_APP_PATH"
         if (isWinOs) {
             commandLine "cmd", "/c", "gradlew", ":android-metadata-generator:jar"
         } else {
@@ -134,7 +137,7 @@ task generateRuntime {
 
 task generateOptimizedRuntimeAar (type: Exec) {
     doFirst {
-        workingDir "$rootDir/test-app"
+        workingDir "$TEST_APP_PATH"
         if (isWinOs) {
             commandLine "cmd", "/c", "gradlew", ":runtime:assembleRelease", "-PpackageVersion=${pVersion}", "-PgitCommitVersion=${arVersion}", "-Poptimized"
         } else {
@@ -145,7 +148,7 @@ task generateOptimizedRuntimeAar (type: Exec) {
 
 task generateRuntimeAar (type: Exec) {
     doFirst {
-        workingDir "$rootDir/test-app"
+        workingDir "$TEST_APP_PATH"
         if (isWinOs) {
             commandLine "cmd", "/c", "gradlew", ":runtime:assembleRelease", "-PpackageVersion=${pVersion}", "-PgitCommitVersion=${arVersion}"
         } else {
@@ -157,77 +160,77 @@ task generateRuntimeAar (type: Exec) {
 task copyFilesToProjectTemeplate {
     doLast {
         copy {
-            from "$rootDir/test-app/app/src/debug"
-            into "$rootDir/dist/framework/app/src/debug"
+            from "$TEST_APP_PATH/app/src/debug"
+            into "$DIST_FRAMEWORK_PATH/app/src/debug"
         }
         copy {
-            from "$rootDir/test-app/app/src/main/assets/internal"
-            into "$rootDir/dist/framework/app/src/main/assets/internal"
+            from "$TEST_APP_PATH/app/src/main/assets/internal"
+            into "$DIST_FRAMEWORK_PATH/app/src/main/assets/internal"
         }
         copy {
-            from "$rootDir/test-app/app/src/main/java/com/tns/"
+            from "$TEST_APP_PATH/app/src/main/java/com/tns/"
             include "*.java"
             exclude "NativeScriptApplication.java"
             exclude "NativeScriptActivity.java"
-            into "$rootDir/dist/framework/app/src/main/java/com/tns"
+            into "$DIST_FRAMEWORK_PATH/app/src/main/java/com/tns"
         }
         copy {
-            from "$rootDir/test-app/app/src/main/java/com/tns/internal"
-            into "$rootDir/dist/framework/app/src/main/java/com/tns/internal"
+            from "$TEST_APP_PATH/app/src/main/java/com/tns/internal"
+            into "$DIST_FRAMEWORK_PATH/app/src/main/java/com/tns/internal"
         }
         copy {
-            from "$rootDir/test-app/build-tools/static-binding-generator.jar"
-            into "$rootDir/dist/framework/build-tools"
+            from "$BUILD_TOOLS_PATH/static-binding-generator.jar"
+            into "$DIST_FRAMEWORK_PATH/build-tools"
         }
         copy {
-            from "$rootDir/test-app/build-tools/dts-generator.jar"
-            into "$rootDir/dist/framework/build-tools"
+            from "$BUILD_TOOLS_PATH/dts-generator.jar"
+            into "$DIST_FRAMEWORK_PATH/build-tools"
         }
         copy {
-            from "$rootDir/test-app/build-tools/jsparser"
+            from "$BUILD_TOOLS_PATH/jsparser"
             exclude "logs", "node_modules", "out", "package.json"
-            into "$rootDir/dist/framework/build-tools/jsparser"
+            into "$DIST_FRAMEWORK_PATH/build-tools/jsparser"
         }
         copy {
-            from "$rootDir/test-app/build-tools/android-metadata-generator.jar"
-            into "$rootDir/dist/framework/build-tools"
+            from "$BUILD_TOOLS_PATH/android-metadata-generator.jar"
+            into "$DIST_FRAMEWORK_PATH/build-tools"
         }
         copy {
-            from "$rootDir/test-app/runtime/build/outputs/aar/runtime-regular-release.aar"
-            into "$rootDir/dist/framework/app/libs/runtime-libs"
+            from "$TEST_APP_PATH/runtime/build/outputs/aar/runtime-regular-release.aar"
+            into "$DIST_FRAMEWORK_PATH/app/libs/runtime-libs"
             rename "runtime-regular-release.aar", "nativescript-regular.aar"
         }
         copy {
-            from "$rootDir/test-app/runtime/build/outputs/aar/runtime-optimized-release.aar"
-            into "$rootDir/dist/framework/app/libs/runtime-libs"
+            from "$TEST_APP_PATH/runtime/build/outputs/aar/runtime-optimized-release.aar"
+            into "$DIST_FRAMEWORK_PATH/app/libs/runtime-libs"
             rename "runtime-optimized-release.aar", "nativescript-optimized.aar"
         }
         copy {
-            from "$rootDir/test-app/app/build.gradle"
-            into "$rootDir/dist/framework/app"
+            from "$TEST_APP_PATH/app/build.gradle"
+            into "$DIST_FRAMEWORK_PATH/app"
         }
         copy {
-            from "$rootDir/test-app/build.gradle"
-            into "$rootDir/dist/framework"
+            from "$TEST_APP_PATH/build.gradle"
+            into "$DIST_FRAMEWORK_PATH"
         }
         copy {
-            from "$rootDir/test-app/gradle"
-            into "$rootDir/dist/framework/gradle"
+            from "$TEST_APP_PATH/gradle"
+            into "$DIST_FRAMEWORK_PATH/gradle"
         }
         copy {
-            from "$rootDir/test-app/gradlew"
-            into "$rootDir/dist/framework"
+            from "$TEST_APP_PATH/gradlew"
+            into "$DIST_FRAMEWORK_PATH"
         }
         copy {
-            from "$rootDir/test-app/gradlew.bat"
-            into "$rootDir/dist/framework"
+            from "$TEST_APP_PATH/gradlew.bat"
+            into "$DIST_FRAMEWORK_PATH"
         }
     }
 }
 
 task copyProjectTemplate(type: Copy) {
     from "$rootDir/build-artifacts/project-template-gradle"
-    into "$rootDir/dist/framework"
+    into "$DIST_FRAMEWORK_PATH"
 }
 
 task copyPackageJson(type: Copy) {
