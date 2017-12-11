@@ -65,7 +65,7 @@ public class Main {
     }
 
     private static void runJsParser(File inputDir) throws IOException {
-        String parserPath = Paths.get(System.getProperty("user.dir"),"static-binding-generator", "jsparser", "js_parser.js").toString();
+        String parserPath = Paths.get(System.getProperty("user.dir"),"jsparser", "js_parser.js").toString();
         String inputPath = inputDir.getAbsolutePath();
         String bindingsFilePath = Paths.get(System.getProperty("user.dir"), SBG_BINDINGS_NAME).toString();
         String interfaceNamesFilePath = Paths.get(System.getProperty("user.dir"), SBG_INTERFACE_NAMES).toString();

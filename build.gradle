@@ -156,6 +156,8 @@ task copyFilesToProjectTemeplate {
         copy {
             from "$rootDir/test-app/app/src/main/java/com/tns/"
             include "*.java"
+            exclude "NativeScriptApplication.java"
+            exclude "NativeScriptActivity.java"
             into "$rootDir/dist/framework/app/src/main/java/com/tns"
         }
         copy {
@@ -167,7 +169,7 @@ task copyFilesToProjectTemeplate {
             into "$rootDir/dist/framework/build-tools"
         }
         copy {
-            from "$rootDir/test-app/build-tools/static-binding-generator/jsparser"
+            from "$rootDir/test-app/build-tools/jsparser"
             exclude "logs", "node_modules", "out", "package.json"
             into "$rootDir/dist/framework/build-tools/jsparser"
         }
