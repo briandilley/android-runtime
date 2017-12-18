@@ -39,6 +39,7 @@ public class Main {
         runJsParser(inputDir);
 
         // generate java bindings
+        new File(SBG_BINDINGS_NAME).delete();
         String inputBindingFilename = Paths.get(System.getProperty("user.dir"), SBG_BINDINGS_NAME).toString();
         new Generator(outputDir, rows).writeBindings(inputBindingFilename);
     }
